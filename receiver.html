@@ -74,27 +74,24 @@ limitations under the License.
 	}
 	
     </style>
-    <title>MunchkinCast</title>
+    <title>MunchCast</title>
   </head>
   <body>
-	<!-- DIV id="message"></DIV -->
-	
 	<table id="scoreTable" border="0" width="100%">
  	</table>
 	
-	<!-- script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script -->
-	<script type="text/javascript" src="jquery.min.js"></script>
-    <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
     
     <script type="text/javascript">
       window.onload = function() {
         cast.receiver.logger.setLevelValue(0);
         window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
-        console.log('Starting Receiver Manager');
+        //console.log('Starting Receiver Manager');
         
         // handler for the 'ready' event
         castReceiverManager.onReady = function(event) {
-          console.log('Received Ready event: ' + JSON.stringify(event.data));
+          //console.log('Received Ready event: ' + JSON.stringify(event.data));
           window.castReceiverManager.setApplicationState("Application status is ready...");
         };
         
@@ -121,13 +118,14 @@ limitations under the License.
         // create a CastMessageBus to handle messages for a custom namespace
         window.messageBus =
           window.castReceiverManager.getCastMessageBus(
-              'urn:x-cast:urn:x-cast:com.nachiketapte.munchkincast');
+              'urn:x-cast:com.nachiketapte.munchcast');
 
         // handler for the CastMessageBus message event
         window.messageBus.onMessage = function(event) {
           console.log('Message [' + event.senderId + ']: ' + event.data);
           // display the message from the sender
-          displayText(event.data);
+          //displayText(event.data);
+          doStuff(event.data);
           // inform all senders on the CastMessageBus of the incoming message event
           // sender message listener will be invoked
           window.messageBus.send(event.senderId, event.data);
@@ -137,31 +135,21 @@ limitations under the License.
         window.castReceiverManager.start({statusText: "Application is starting"});
         console.log('Receiver Manager started');
       };
-      
-      // utility function to display the text message in the input field
-      function displayText(text) {
-        console.log(text);
-        //document.getElementById("message").innerHTML=text;
-        window.castReceiverManager.setApplicationState(text);
-        
-        doStuff(text);
-      };
-      
+
       function doStuff(json) {
-      	$("#scoreTable").empty();
-      	
-      	var jsonString = json;
-      	if (!json) {
-      	 //jsonString = '[{"gender":"UNKNOWN","name":"Hello","item":-1,"level":2,"modifier":2,"id":2109208016,"winTies":false},{"gender":"UNKNOWN","name":"Test","item":4,"level":8,"modifier":0,"id":-1732086444,"winTies":false},{"gender":"UNKNOWN","name":"Durr","item":0,"level":1,"modifier":4,"id":438454046,"winTies":false},{"gender":"UNKNOWN","name":"Fooo","item":4,"level":3,"modifier":0,"id":-786900832,"winTies":false}]';
-        }
-        
-        var game = jQuery.parseJSON( jsonString );
-        buildHtmlTable(game);
+          try {
+            $("#scoreTable").empty();
+            var game = jQuery.parseJSON( json );
+            buildHtmlTable(game);
+          }
+          catch(err) {
+                document.getElementById("scoreTable").innerHTML = err.message;
+          }
       };
-      
+
       // Builds the HTML Table out of json data
 	 function buildHtmlTable(data) {
-	     var columns = addAllColumnHeaders(data);
+	     var columns = addAllColumnHeaders();
 	 
 	     for (var i = 0 ; i < data.length ; i++) {
 	         var row$ = $('<tr/>');
@@ -177,9 +165,7 @@ limitations under the License.
 	 };
 	 
 	 // Adds a header row to the table and returns the set of columns.
-	 // Need to do union of keys from all records as some records may not contain
-	 // all records
-	 function addAllColumnHeaders(data) {
+	 function addAllColumnHeaders() {
 	     var columnSet = [];
 	     var headerTr$ = $('<tr/>');
 	     
